@@ -1,0 +1,5 @@
+[deploy]
+startCommand = "npm start"
+
+[[services]]
+port = 8080
