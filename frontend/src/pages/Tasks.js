@@ -16,9 +16,7 @@ const Tasks = () => {
     priority: 'medium', due_date: '', project_id: '', assigned_to: ''
   });
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  useEffect(() => { fetchData(); }, []);
 
   const fetchData = async () => {
     try {
@@ -29,9 +27,7 @@ const Tasks = () => {
       ]);
       setTasks(tasksRes.data);
       setProjects(projectsRes.data);
-    } catch (err) {
-      console.error(err);
-    }
+    } catch (err) { console.error(err); }
     setLoading(false);
   };
 
@@ -39,13 +35,19 @@ const Tasks = () => {
     e.preventDefault();
     setError('');
     try {
-      await axios.post(`${process.env.REACT_APP_API_URL}/tasks`, form, {
+      const taskData = {
+        title: form.title,
+        description: form.description || null,
+        status: form.status,
+        priority: form.priority,
+        due_date: form.due_date || null,
+        project_id: parseInt(form.project_id),
+        assigned_to: form.assigned_to ? parseInt(form.assigned_to) : null
+      };
+      await axios.post(`${process.env.REACT_APP_API_URL}/tasks`, taskData, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setForm({
-        title: '', description: '', status: 'todo',
-        priority: 'medium', due_date: '', project_id: '', assigned_to: ''
-      });
+      setForm({ title: '', description: '', status: 'todo', priority: 'medium', due_date: '', project_id: '', assigned_to: '' });
       setShowForm(false);
       fetchData();
     } catch (err) {
@@ -60,9 +62,7 @@ const Tasks = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       fetchData();
-    } catch (err) {
-      console.error(err);
-    }
+    } catch (err) { console.error(err); }
   };
 
   const handleDelete = async (id) => {
@@ -72,32 +72,13 @@ const Tasks = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchData();
-    } catch (err) {
-      console.error(err);
-    }
+    } catch (err) { console.error(err); }
   };
 
-  const filteredTasks = tasks.filter(task => {
-    if (filter === 'all') return true;
-    return task.status === filter;
-  });
-
-  const getStatusColor = (status) => {
-    if (status === 'todo') return '#e2e8f0';
-    if (status === 'in_progress') return '#bee3f8';
-    if (status === 'done') return '#c6f6d5';
-  };
-
-  const getPriorityColor = (priority) => {
-    if (priority === 'high') return '#fed7d7';
-    if (priority === 'medium') return '#fefcbf';
-    if (priority === 'low') return '#c6f6d5';
-  };
-
-  const isOverdue = (due_date, status) => {
-    if (!due_date || status === 'done') return false;
-    return new Date(due_date) < new Date();
-  };
+  const filteredTasks = tasks.filter(task => filter === 'all' ? true : task.status === filter);
+  const getStatusColor = (status) => ({ todo: '#e2e8f0', in_progress: '#bee3f8', done: '#c6f6d5' }[status]);
+  const getPriorityColor = (priority) => ({ high: '#fed7d7', medium: '#fefcbf', low: '#c6f6d5' }[priority]);
+  const isOverdue = (due_date, status) => { if (!due_date || status === 'done') return false; return new Date(due_date) < new Date(); };
 
   if (loading) return <div style={styles.loading}>Loading...</div>;
 
@@ -114,7 +95,6 @@ const Tasks = () => {
           )}
         </div>
 
-        {/* Create Task Form */}
         {showForm && (
           <div style={styles.formCard}>
             <h3 style={styles.formTitle}>Create New Task</h3>
@@ -123,36 +103,21 @@ const Tasks = () => {
               <div style={styles.grid2}>
                 <div style={styles.field}>
                   <label style={styles.label}>Title *</label>
-                  <input
-                    style={styles.input}
-                    type="text"
-                    placeholder="Task title"
-                    value={form.title}
-                    onChange={(e) => setForm({ ...form, title: e.target.value })}
-                    required
-                  />
+                  <input style={styles.input} type="text" placeholder="Task title" value={form.title}
+                    onChange={(e) => setForm({ ...form, title: e.target.value })} required />
                 </div>
                 <div style={styles.field}>
                   <label style={styles.label}>Project *</label>
-                  <select
-                    style={styles.input}
-                    value={form.project_id}
-                    onChange={(e) => setForm({ ...form, project_id: parseInt(e.target.value) })}
-                    required
-                  >
+                  <select style={styles.input} value={form.project_id}
+                    onChange={(e) => setForm({ ...form, project_id: e.target.value })} required>
                     <option value="">Select Project</option>
-                    {projects.map(p => (
-                      <option key={p.id} value={p.id}>{p.name}</option>
-                    ))}
+                    {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                   </select>
                 </div>
                 <div style={styles.field}>
                   <label style={styles.label}>Priority</label>
-                  <select
-                    style={styles.input}
-                    value={form.priority}
-                    onChange={(e) => setForm({ ...form, priority: e.target.value })}
-                  >
+                  <select style={styles.input} value={form.priority}
+                    onChange={(e) => setForm({ ...form, priority: e.target.value })}>
                     <option value="low">Low</option>
                     <option value="medium">Medium</option>
                     <option value="high">High</option>
@@ -160,30 +125,18 @@ const Tasks = () => {
                 </div>
                 <div style={styles.field}>
                   <label style={styles.label}>Due Date</label>
-                  <input
-                    style={styles.input}
-                    type="date"
-                    value={form.due_date}
-                    onChange={(e) => setForm({ ...form, due_date: e.target.value })}
-                  />
+                  <input style={styles.input} type="date" value={form.due_date}
+                    onChange={(e) => setForm({ ...form, due_date: e.target.value })} />
                 </div>
                 <div style={styles.field}>
                   <label style={styles.label}>Assign To (User ID)</label>
-                  <input
-                    style={styles.input}
-                    type="number"
-                    placeholder="Enter user ID"
-                    value={form.assigned_to}
-                    onChange={(e) => setForm({ ...form, assigned_to: parseInt(e.target.value) || null })}
-                  />
+                  <input style={styles.input} type="number" placeholder="Enter user ID" value={form.assigned_to}
+                    onChange={(e) => setForm({ ...form, assigned_to: e.target.value })} />
                 </div>
                 <div style={styles.field}>
                   <label style={styles.label}>Status</label>
-                  <select
-                    style={styles.input}
-                    value={form.status}
-                    onChange={(e) => setForm({ ...form, status: e.target.value })}
-                  >
+                  <select style={styles.input} value={form.status}
+                    onChange={(e) => setForm({ ...form, status: e.target.value })}>
                     <option value="todo">To Do</option>
                     <option value="in_progress">In Progress</option>
                     <option value="done">Done</option>
@@ -192,34 +145,25 @@ const Tasks = () => {
               </div>
               <div style={styles.field}>
                 <label style={styles.label}>Description</label>
-                <textarea
-                  style={{ ...styles.input, height: '80px', resize: 'vertical' }}
-                  placeholder="Task description"
-                  value={form.description}
-                  onChange={(e) => setForm({ ...form, description: e.target.value })}
-                />
+                <textarea style={{ ...styles.input, height: '80px', resize: 'vertical' }}
+                  placeholder="Task description" value={form.description}
+                  onChange={(e) => setForm({ ...form, description: e.target.value })} />
               </div>
-              <button style={styles.submitButton} type="submit">
-                Create Task
-              </button>
+              <button style={styles.submitButton} type="submit">Create Task</button>
             </form>
           </div>
         )}
 
-        {/* Filter Buttons */}
         <div style={styles.filters}>
           {['all', 'todo', 'in_progress', 'done'].map(f => (
-            <button
-              key={f}
+            <button key={f}
               style={{ ...styles.filterBtn, backgroundColor: filter === f ? '#4c51bf' : 'white', color: filter === f ? 'white' : '#4a5568' }}
-              onClick={() => setFilter(f)}
-            >
+              onClick={() => setFilter(f)}>
               {f === 'all' ? 'All' : f === 'in_progress' ? 'In Progress' : f.charAt(0).toUpperCase() + f.slice(1)}
             </button>
           ))}
         </div>
 
-        {/* Tasks List */}
         {filteredTasks.length === 0 ? (
           <div style={styles.empty}>No tasks found!</div>
         ) : (
@@ -232,11 +176,8 @@ const Tasks = () => {
                     {isOverdue(task.due_date, task.status) && <span style={styles.overdueTag}>⚠️ Overdue</span>}
                   </h3>
                   <div style={styles.taskActions}>
-                    <select
-                      style={styles.statusSelect}
-                      value={task.status}
-                      onChange={(e) => handleStatusUpdate(task.id, e.target.value)}
-                    >
+                    <select style={styles.statusSelect} value={task.status}
+                      onChange={(e) => handleStatusUpdate(task.id, e.target.value)}>
                       <option value="todo">To Do</option>
                       <option value="in_progress">In Progress</option>
                       <option value="done">Done</option>
@@ -251,9 +192,7 @@ const Tasks = () => {
                   <span style={{ ...styles.badge, backgroundColor: getStatusColor(task.status) }}>{task.status}</span>
                   <span style={{ ...styles.badge, backgroundColor: getPriorityColor(task.priority) }}>{task.priority}</span>
                   <span style={styles.taskMeta}>📁 {task.project_name}</span>
-                  <span style={styles.taskMeta}>
-                    📅 {task.due_date ? new Date(task.due_date).toLocaleDateString() : 'No date'}
-                  </span>
+                  <span style={styles.taskMeta}>📅 {task.due_date ? new Date(task.due_date).toLocaleDateString() : 'No date'}</span>
                 </div>
               </div>
             ))}
@@ -270,52 +209,25 @@ const styles = {
   header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' },
   heading: { color: '#1a1a2e', margin: 0 },
   loading: { display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', fontSize: '18px' },
-  addButton: {
-    backgroundColor: '#4c51bf', color: 'white', border: 'none',
-    padding: '10px 20px', borderRadius: '6px', cursor: 'pointer', fontSize: '14px', fontWeight: '600'
-  },
-  formCard: {
-    backgroundColor: 'white', padding: '25px', borderRadius: '10px',
-    boxShadow: '0 2px 10px rgba(0,0,0,0.08)', marginBottom: '25px'
-  },
+  addButton: { backgroundColor: '#4c51bf', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '6px', cursor: 'pointer', fontSize: '14px', fontWeight: '600' },
+  formCard: { backgroundColor: 'white', padding: '25px', borderRadius: '10px', boxShadow: '0 2px 10px rgba(0,0,0,0.08)', marginBottom: '25px' },
   formTitle: { color: '#1a1a2e', marginTop: 0, marginBottom: '20px' },
-  error: {
-    backgroundColor: '#fed7d7', color: '#c53030',
-    padding: '10px', borderRadius: '6px', marginBottom: '15px', fontSize: '14px'
-  },
+  error: { backgroundColor: '#fed7d7', color: '#c53030', padding: '10px', borderRadius: '6px', marginBottom: '15px', fontSize: '14px' },
   grid2: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '15px' },
   field: { marginBottom: '15px' },
   label: { display: 'block', marginBottom: '6px', color: '#4a5568', fontSize: '14px', fontWeight: '600' },
-  input: {
-    width: '100%', padding: '10px 12px', border: '1px solid #e2e8f0',
-    borderRadius: '6px', fontSize: '14px', boxSizing: 'border-box'
-  },
-  submitButton: {
-    backgroundColor: '#48bb78', color: 'white', border: 'none',
-    padding: '10px 20px', borderRadius: '6px', cursor: 'pointer', fontSize: '14px', fontWeight: '600'
-  },
+  input: { width: '100%', padding: '10px 12px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '14px', boxSizing: 'border-box' },
+  submitButton: { backgroundColor: '#48bb78', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '6px', cursor: 'pointer', fontSize: '14px', fontWeight: '600' },
   filters: { display: 'flex', gap: '10px', marginBottom: '20px' },
-  filterBtn: {
-    padding: '8px 16px', border: '1px solid #e2e8f0',
-    borderRadius: '6px', cursor: 'pointer', fontSize: '14px', fontWeight: '600'
-  },
-  empty: {
-    backgroundColor: 'white', padding: '40px', borderRadius: '10px',
-    textAlign: 'center', color: '#718096', fontSize: '16px'
-  },
+  filterBtn: { padding: '8px 16px', border: '1px solid #e2e8f0', borderRadius: '6px', cursor: 'pointer', fontSize: '14px', fontWeight: '600' },
+  empty: { backgroundColor: 'white', padding: '40px', borderRadius: '10px', textAlign: 'center', color: '#718096', fontSize: '16px' },
   taskList: { display: 'flex', flexDirection: 'column', gap: '15px' },
-  taskCard: {
-    backgroundColor: 'white', padding: '20px', borderRadius: '10px',
-    boxShadow: '0 2px 10px rgba(0,0,0,0.08)'
-  },
+  taskCard: { backgroundColor: 'white', padding: '20px', borderRadius: '10px', boxShadow: '0 2px 10px rgba(0,0,0,0.08)' },
   taskHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' },
   taskTitle: { color: '#1a1a2e', margin: 0, fontSize: '16px' },
   overdueTag: { marginLeft: '10px', fontSize: '12px', color: '#e53e3e' },
   taskActions: { display: 'flex', gap: '10px', alignItems: 'center' },
-  statusSelect: {
-    padding: '6px 10px', border: '1px solid #e2e8f0',
-    borderRadius: '6px', fontSize: '13px', cursor: 'pointer'
-  },
+  statusSelect: { padding: '6px 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '13px', cursor: 'pointer' },
   deleteBtn: { background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px' },
   taskDesc: { color: '#718096', fontSize: '14px', marginBottom: '12px' },
   taskFooter: { display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' },
