@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+ximport React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/Navbar';
@@ -137,7 +137,7 @@ const Tasks = () => {
                   <select
                     style={styles.input}
                     value={form.project_id}
-                    onChange={(e) => setForm({ ...form, project_id: parseInt(e.target.value) })}
+                    onChange={(e) => setForm({ ...form, project_id: e.target.value })}
                     required
                   >
                     <option value="">Select Project</option>
@@ -174,7 +174,7 @@ const Tasks = () => {
                     type="number"
                     placeholder="Enter user ID"
                     value={form.assigned_to}
-                    onChange={(e) => setForm({ ...form, assigned_to: parseInt(e.target.value) || null })}
+                    onChange={(e) => setForm({ ...form, assigned_to: e.target.value })}
                   />
                 </div>
                 <div style={styles.field}>
