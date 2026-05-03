@@ -3,8 +3,7 @@
 A full-stack web app for managing projects and tasks with role-based access control.
 
 ## Live Demo
-- Frontend: https://team-task-manager-two-ivory.vercel.app
-- Backend: https://team-task-manager-production-b4c1.up.railway.app
+- Frontend: fabulous-amazement-production-b2c4.up.railway.app
 
 ## Features
 - JWT Authentication (Signup/Login)
